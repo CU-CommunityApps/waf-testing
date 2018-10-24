@@ -1,0 +1,50 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'NDFD/NDGD ETL Backend'
+
+Resources:
+
+  MyWafAllowGet:
+    Type: 'AWS::WAF::ByteMatchSet'
+    Properties:
+      Name: 'allowget'
+      ByteMatchTuples:
+        - FieldToMatch:
+            Type: 'METHOD'
+          PositionalConstraint: 'EXACTLY'
+          TargetString: 'GET'
+          TextTransformation: 'NONE'
+        # - FieldToMatch:
+        #     Type: 'METHOD'
+        #   PositionalConstraint: 'EXACTLY'
+        #   TargetString: 'HEAD'
+        #   TextTransformation: 'NONE'
+        # - FieldToMatch:
+        #     Type: 'METHOD'
+        #   PositionalConstraint: 'EXACTLY'
+        #   TargetString: 'POST'
+        #   TextTransformation: 'NONE'
+  
+  MyWafRule:
+    Type: 'AWS::WAF::Rule'
+    Properties:
+      MetricName: 'allowget'
+      Name: 'allowget'
+      Predicates:
+        - DataId: !Ref 'MyWafAllowGet'
+          Negated: false
+          Type: 'ByteMatch'
+
+  MyWebAcl:
+    Type: 'AWS::WAF::WebACL'
+    Properties:
+      DefaultAction:
+         Type: 'BLOCK' 
+      Name: 'mywebacl'
+      MetricName: 'mywebacl'
+      Rules:
+        - Action: 
+            Type: 'ALLOW'
+          Priority: 1
+          RuleId: !Ref 'MyWafRule'
+        
+          
